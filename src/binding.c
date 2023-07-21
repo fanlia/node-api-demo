@@ -1,55 +1,29 @@
 
 #include <node_api.h>
 
-#define NAPI_CALL(env, call)                                      \
-  do {                                                            \
-    napi_status status = (call);                                  \
-    if (status != napi_ok) {                                      \
-      const napi_extended_error_info* error_info = NULL;          \
-      napi_get_last_error_info((env), &error_info);               \
-      const char* err_message = error_info->error_message;        \
-      bool is_pending;                                            \
-      napi_is_exception_pending((env), &is_pending);              \
-      if (!is_pending) {                                          \
-        const char* message = (err_message == NULL)               \
-            ? "empty error message"                               \
-            : err_message;                                        \
-        napi_throw_error((env), NULL, message);                   \
-        return NULL;                                              \
-      }                                                           \
-    }                                                             \
-  } while(0)
+static napi_value foo(napi_env env, napi_callback_info info) {
 
-static napi_value
-DoSomethingUseful(napi_env env, napi_callback_info info) {
-  napi_value result;
-  NAPI_CALL(env, napi_create_string_utf8(env,
-                                         "doSomethingUseful",
-                                         NAPI_AUTO_LENGTH,
-                                         &result));
-  return result;
+    napi_value result;
+    if (napi_create_int32(env, 42, &result) != napi_ok) {
+        napi_throw_error(env, NULL, "Failed to create return value");
+        return NULL;
+    }
+
+    return result;
 }
 
-napi_value create_addon(napi_env env) {
-  napi_value result;
-  NAPI_CALL(env, napi_create_object(env, &result));
+napi_value napi_register_module_v1(napi_env env, napi_value exports) {
+    napi_value function;
+    if (napi_create_function(env, NULL, 0, foo, NULL, &function) != napi_ok) {
+        napi_throw_error(env, NULL, "Failed to create function");
+        return NULL;
+    }
 
-  napi_value exported_function;
-  NAPI_CALL(env, napi_create_function(env,
-                                      "doSomethingUseful",
-                                      NAPI_AUTO_LENGTH,
-                                      DoSomethingUseful,
-                                      NULL,
-                                      &exported_function));
+    if (napi_set_named_property(env, exports, "foo", function) != napi_ok) {
+        napi_throw_error(env, NULL, "Failed to add function to exports");
+        return NULL;
+    }
 
-  NAPI_CALL(env, napi_set_named_property(env,
-                                         result,
-                                         "doSomethingUseful",
-                                         exported_function));
-
-  return result;
+    return exports;
 }
 
-NAPI_MODULE_INIT() {
-  return create_addon(env);
-}

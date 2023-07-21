@@ -1,4 +1,4 @@
 
 const binding = require('./build/Release/binding.node')
 
-console.log(binding.doSomethingUseful())
+console.log(binding.foo())
