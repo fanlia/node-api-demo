@@ -1,0 +1,14 @@
+{
+  "name": "api-demo",
+  "version": "1.0.0",
+  "description": "maybe a starter for a node native addon using node-api",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node-gyp rebuild"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "gypfile": true
+}
